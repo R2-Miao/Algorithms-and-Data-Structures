@@ -16,8 +16,6 @@ namespace Huffman_Coding
 
         public HuffmanNode LeftSubtreeTopNode { get; set; }
         public HuffmanNode RightSubtreeTopNode { get; set; }
-
-        public bool PositionInTreeFound { get; set; }
         
         public HuffmanNode JoinWith(HuffmanNode other)
         {
