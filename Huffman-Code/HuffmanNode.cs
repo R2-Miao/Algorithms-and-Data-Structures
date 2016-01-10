@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,32 +7,41 @@ using System.Threading.Tasks;
 
 namespace Huffman_Coding
 {
-    public class HuffmanNode : IComparable<HuffmanNode>
+    public static partial class HuffmanCodes
     {
-        public string Symbol { get; set; }
-        public int Frequency { get; set; }
-        public string HuffmanCode { get; set; }
-
-        public HuffmanNode LeftSubtreeTopNode { get; set; }
-        public HuffmanNode RightSubtreeTopNode { get; set; }
-
-        public HuffmanNode JoinWith(HuffmanNode other)
+        /// <summary>
+        /// HuffmanNode is a node in a binary tree.
+        /// </summary>
+        private class HuffmanNode : IComparable<HuffmanNode>
         {
-            var parentNode = new HuffmanNode() { Symbol = this.Symbol + other.Symbol, Frequency = this.Frequency + other.Frequency };
-            parentNode.LeftSubtreeTopNode = this.Frequency >= other.Frequency ? this : other;
-            parentNode.RightSubtreeTopNode = this.Frequency < other.Frequency ? this : other;
+            public string Characters { get; set; }
+            public int NumOccurrences { get; set; }
+            public BitArray HuffmanCode { get; set; }
 
-            return parentNode;
-        }
+            public HuffmanNode Left { get; set; }
+            public HuffmanNode Right { get; set; }
 
-        public bool IsLeaf()
-        {
-            return this.LeftSubtreeTopNode == null && this.RightSubtreeTopNode == null;
-        }
+            public HuffmanNode JoinWith(HuffmanNode other)
+            {
+                var parentNode = new HuffmanNode() { Characters = this.Characters + other.Characters, NumOccurrences = this.NumOccurrences + other.NumOccurrences };
+                parentNode.Left = this.NumOccurrences >= other.NumOccurrences ? this : other;
+                parentNode.Right = this.NumOccurrences < other.NumOccurrences ? this : other;
 
-        public int CompareTo(HuffmanNode other)
-        {
-            return this.Frequency.CompareTo(other.Frequency);
+                return parentNode;
+            }
+
+            public bool IsLeaf
+            {
+                get
+                {
+                    return this.Characters.Length == 1;
+                }
+            }
+
+            public int CompareTo(HuffmanNode other)
+            {
+                return this.NumOccurrences.CompareTo(other.NumOccurrences);
+            }
         }
     }
 }
