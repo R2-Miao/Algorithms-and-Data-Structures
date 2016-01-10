@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,43 +7,37 @@ using System.Threading.Tasks;
 
 namespace Huffman_Coding
 {
-    public static class HuffmanTreeBuilder
+    public static partial class HuffmanCodes
     {
-        public static Dictionary<string, string> BuildTreeFrom(string input)
+        public static Dictionary<char, BitArray> DetermineHuffmanCodes(string input)
         {
-            var charFrequency = new Dictionary<char, int>();
+            var charFrequencies = new Dictionary<char, int>();
 
             foreach (char c in input)
             {
-                updateFrequency(c, charFrequency);
+                if (charFrequencies.ContainsKey(c))
+                {
+                    charFrequencies[c]++;
+                }
+                else
+                {
+                    charFrequencies[c] = 1;
+                }
             }
 
-            List<HuffmanNode> huffmanNodes = createHuffmanNodes(charFrequency);
-            huffmanNodes.Sort();
-            buildTreeUsing(huffmanNodes);
+            List<HuffmanNode> singleCharHuffmanNodes = createHuffmanNodes(charFrequencies);
+            singleCharHuffmanNodes.Sort();
 
-            var huffmanCodesToSymbols = new Dictionary<string, string>();
+            writeHuffmanCodesToLeafNodes(singleCharHuffmanNodes);
 
-            foreach (var node in huffmanNodes)
+            var huffmanCodesToCharacters = new Dictionary<char, BitArray>();
+
+            foreach (var node in singleCharHuffmanNodes)
             {
-                huffmanCodesToSymbols.Add(node.HuffmanCode, node.Symbol);
+                huffmanCodesToCharacters.Add(node.Characters[0], node.HuffmanCode);
             }
 
-            return huffmanCodesToSymbols;
-        }
-
-        private static void updateFrequency(char c, Dictionary<char, int> characterFrequency)
-        {
-            bool charWasSeenBefore = characterFrequency.ContainsKey(c);
-
-            if (charWasSeenBefore)
-            {
-                characterFrequency[c]++;
-            }
-            else
-            {
-                characterFrequency.Add(c, 1);
-            }
+            return huffmanCodesToCharacters;
         }
 
         private static List<HuffmanNode> createHuffmanNodes(Dictionary<char, int> charFrequency)
@@ -51,19 +46,19 @@ namespace Huffman_Coding
 
             foreach (char c in charFrequency.Keys)
             {
-                var huffmanNode = new HuffmanNode { Symbol = c.ToString(), Frequency = charFrequency[c] };
+                var huffmanNode = new HuffmanNode { Characters = c.ToString(), NumOccurrences = charFrequency[c] };
                 huffmanNodes.Add(huffmanNode);
             }
 
             return huffmanNodes;
         }
 
-        private static void buildTreeUsing(List<HuffmanNode> huffmanNodes)
+        private static void writeHuffmanCodesToLeafNodes(List<HuffmanNode> singleCharHuffmanNodes)
         {
-            var huffmanNodesCopy = new List<HuffmanNode>(huffmanNodes);
+            var huffmanNodesCopy = new List<HuffmanNode>(singleCharHuffmanNodes);
 
             determineChildNodes(huffmanNodesCopy);
-            determineHuffmanCodesOfLeafNodes(huffmanNodesCopy.First(), "");
+            determineHuffmanCodesOfLeafNodes(huffmanNodesCopy.First(), new BitArray(0));
         }
 
         private static void determineChildNodes(List<HuffmanNode> huffmanNodes)
@@ -82,26 +77,26 @@ namespace Huffman_Coding
             }
         }
 
-        private static void determineHuffmanCodesOfLeafNodes(HuffmanNode node, string shortestBinaryCode)
+        private static void determineHuffmanCodesOfLeafNodes(HuffmanNode node, BitArray shortestBinaryCode)
         {
-            const int LeftSubtreeBit = 0;
-            const int RightSubtreeBit = 1;
+            const bool Zero = false;
+            const bool One = true;
 
-            if (node.IsLeaf())
+            if (node.IsLeaf)
             {
                 node.HuffmanCode = shortestBinaryCode;
                 return;
             }
 
-            determineHuffmanCodesOfLeafNodes(node.LeftSubtreeTopNode, shortestBinaryCode + LeftSubtreeBit.ToString());
-            determineHuffmanCodesOfLeafNodes(node.RightSubtreeTopNode, shortestBinaryCode + RightSubtreeBit.ToString());
+            determineHuffmanCodesOfLeafNodes(node.Left, shortestBinaryCode.WithAppendedValue(Zero));
+            determineHuffmanCodesOfLeafNodes(node.Right, shortestBinaryCode.WithAppendedValue(One));
         }
 
-        public static void PrintTreeContaining(Dictionary<string, string> huffmanCodes)
+        public static void PrintTreeContaining(Dictionary<char, BitArray> huffmanCodes)
         {
-            foreach (KeyValuePair<string, string> huffmanCode in huffmanCodes)
+            foreach (KeyValuePair<char, BitArray> huffmanCode in huffmanCodes)
             {
-                Console.WriteLine(String.Format("{0} is the Huffman code for: {1}.", huffmanCode.Key, huffmanCode.Value));
+                Console.WriteLine(String.Format("{0} has the Huffman code: {1}.", huffmanCode.Key, huffmanCode.Value.ToBitString()));
             }
         }
     }
